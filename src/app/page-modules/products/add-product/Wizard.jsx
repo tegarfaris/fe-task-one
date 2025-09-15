@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { addProduct } from "../../../../features/products/productsSlice";
 import StepOne from "./StepOne";
 import StepTwo from "./StepTwo";
+import Breadcrumb from "../../../../components/breadcrumb/Breadcrumb";
 
 const Wizard = () => {
   const [step, setStep] = useState(1);
@@ -24,6 +25,7 @@ const Wizard = () => {
 
   return (
     <div className="flex flex-col gap-3">
+      <Breadcrumb />
       <div className="mt-10">
         {step === 1 && <StepOne onNext={handleNext} />}
         {step === 2 && <StepTwo onSubmit={handleSubmit} prevData={formData} />}

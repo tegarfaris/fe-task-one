@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
 
 const ProductsTable = () => {
   const navigate = useNavigate();
@@ -7,10 +8,11 @@ const ProductsTable = () => {
 
   return (
     <div className="flex flex-col">
+      <Breadcrumb />
       <div className="p-8 bg-white rounded-lg shadow border border-gray-200 mt-3">
         <div className="flex w-full gap-2 items-center">
           <h2 className="w-full text-2xl font-semibold text-gray-800">
-            Product Catalog
+            Product List
           </h2>
 
           <button
