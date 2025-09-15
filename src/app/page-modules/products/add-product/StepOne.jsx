@@ -10,7 +10,10 @@ const StepOne = ({ onNext }) => {
   };
 
   useEffect(() => {
-    const valid = form.name.trim() !== "" && form.price.trim() !== "";
+    const valid =
+      form.name.trim() !== "" &&
+      form.name.trim().length <= 30 &&
+      form.price.trim() !== "";
     setIsValid(valid);
   }, [form]);
 
@@ -34,7 +37,8 @@ const StepOne = ({ onNext }) => {
           <input
             type="text"
             name="name"
-            placeholder="Enter product name"
+            placeholder="Enter product name (max 30 chars)"
+            maxLength={30} // agar user tidak bisa ketik lebih dari 30
             className="w-full p-2 border rounded focus:ring-2 focus:outline-none border-gray-300 focus:ring-blue-600"
             value={form.name}
             onChange={handleChange}
