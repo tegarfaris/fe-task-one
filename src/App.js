@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import ProductsTable from "./app/page-modules/products/ProductsTable";
 import Wizard from "./app/page-modules/products/add-product/Wizard";
 
 function App() {
+  useEffect(() => {
+    document.title = "Dashboard Product";
+  }, []);
+
   return (
     <Layout>
       <Routes>
