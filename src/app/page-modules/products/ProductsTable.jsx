@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
+import { formatCurrency } from "../../../utils/formatCurrency";
 
 const ProductsTable = () => {
   const navigate = useNavigate();
@@ -53,11 +54,7 @@ const ProductsTable = () => {
                   >
                     <td className="p-3 text-gray-800">{p.name}</td>
                     <td className="p-3 text-gray-800">
-                      {new Intl.NumberFormat("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                        minimumFractionDigits: 0,
-                      }).format(p.price)}
+                      {formatCurrency(p.price)}
                     </td>
 
                     <td className="p-3 text-gray-600">{p.attachment || "-"}</td>
