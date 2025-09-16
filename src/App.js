@@ -3,7 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import ProductsTable from "./app/page-modules/products/ProductsTable";
 import Wizard from "./app/page-modules/products/add-product/Wizard";
-import ComingSoon from "./components/coming-soon/ComingSoon";
+import JobsTable from "./app/page-modules/jobs/JobsTable";
+import AddJobForm from "./app/page-modules/jobs/add-job/AddJobForm";
 
 function App() {
   useEffect(() => {
@@ -18,7 +19,8 @@ function App() {
         <Route path="/product-list/add-product" element={<Wizard />} />
 
         {/* job list */}
-        <Route path="/job-list" element={<ComingSoon />} />
+        <Route path="/job-list" element={<JobsTable />} />
+        <Route path="/job-list/add-job" element={<AddJobForm />} />
       </Routes>
     </Layout>
   );
