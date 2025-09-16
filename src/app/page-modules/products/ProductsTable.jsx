@@ -2,15 +2,33 @@ import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
 import useProducts from "../../hooks/useProduct";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const ProductsTable = () => {
   const navigate = useNavigate();
   const { getProductList, list: products, pending } = useProducts();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     getProductList();
   }, [getProductList]);
+
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const reversedProducts = [...products].reverse();
+
+  const paginatedProducts = reversedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePrev = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
 
   return (
     <div className="flex flex-col">
@@ -35,45 +53,85 @@ const ProductsTable = () => {
               Loading products...
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-3 text-sm font-semibold text-gray-700">
-                    Name
-                  </th>
-                  <th className="p-3 text-sm font-semibold text-gray-700">
-                    Price
-                  </th>
-                  <th className="p-3 text-sm font-semibold text-gray-700">
-                    Document
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.length === 0 ? (
-                  <tr>
-                    <td colSpan="3" className="p-4 text-gray-500 text-center">
-                      No products available.
-                    </td>
+            <>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="p-3 text-sm font-semibold text-gray-700">
+                      No
+                    </th>
+                    <th className="p-3 text-sm font-semibold text-gray-700">
+                      Name
+                    </th>
+                    <th className="p-3 text-sm font-semibold text-gray-700">
+                      Price
+                    </th>
+                    <th className="p-3 text-sm font-semibold text-gray-700">
+                      Document
+                    </th>
                   </tr>
-                ) : (
-                  products.map((p, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition"
-                    >
-                      <td className="w-[40%] p-3 text-gray-800">{p.name}</td>
-                      <td className="w-[20%] p-3 text-gray-800">
-                        {formatCurrency(p.price)}
-                      </td>
-                      <td className="w-[40%] p-3 text-gray-600">
-                        {p.document || "-"}
+                </thead>
+                <tbody>
+                  {paginatedProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="p-4 text-gray-500 text-center">
+                        No products available.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    paginatedProducts.map((p, idx) => (
+                      <tr
+                        key={idx}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition"
+                      >
+                        <td className="w-[5%] p-3 text-gray-800">
+                          {" "}
+                          {(currentPage - 1) * itemsPerPage + idx + 1}
+                        </td>
+                        <td className="w-[40%] p-3 text-gray-800">{p.name}</td>
+                        <td className="w-[20%] p-3 text-gray-800">
+                          {formatCurrency(p.price)}
+                        </td>
+                        <td className="w-[40%] p-3 text-gray-600">
+                          {p.document || "-"}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-end items-center gap-4 mt-6">
+                  <button
+                    onClick={handlePrev}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded ${
+                      currentPage === 1
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-900 text-white"
+                    }`}
+                  >
+                    Prev
+                  </button>
+                  <span className="text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={handleNext}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded ${
+                      currentPage === totalPages
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-900 text-white"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
