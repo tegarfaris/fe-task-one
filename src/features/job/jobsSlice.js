@@ -20,7 +20,6 @@ const jobsSlice = createSlice({
         state.pending = false;
         state.success = true;
         state.jobList = action.payload;
-        console.log(action.payload, "reducer");
         state.isEmpty = action.payload.length === 0;
       })
       .addCase(REQUEST_GET_LIST_JOB.rejected, (state) => {

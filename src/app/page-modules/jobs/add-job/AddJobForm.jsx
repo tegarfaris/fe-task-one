@@ -4,8 +4,8 @@ import useJobs from "../../../hooks/useJobs";
 const AddJobForm = () => {
   const { addJob } = useJobs();
   const [form, setForm] = useState({
-    code: "", //
-    description: "", //512
+    code: "",
+    description: "",
     updateBy: "",
     updateDate: "",
     pjobTypeId: "",

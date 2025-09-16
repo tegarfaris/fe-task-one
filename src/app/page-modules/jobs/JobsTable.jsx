@@ -2,19 +2,46 @@ import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
 import { useEffect, useState } from "react";
 import useJobs from "../../hooks/useJobs";
+import useDebounce from "../../hooks/function/useDebounce";
 
 const JobsTable = () => {
   const navigate = useNavigate();
   const { getJobList, jobList, pending } = useJobs();
+  const [filteredData, setFilteredData] = useState(jobList);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [searchKey, setSearchKey] = useState("");
+  const [filterColumn, setFilterColumn] = useState({
+    code: true,
+    description: true,
+    updateBy: true,
+  });
+  const { debounce } = useDebounce({
+    callback: (keyword) => {
+      setSearchKey(keyword);
+    },
+    delay: 0,
+  });
 
   useEffect(() => {
     getJobList();
   }, [getJobList]);
 
-  const totalPages = Math.ceil(jobList.length / itemsPerPage);
-  const reversedJobs = [...jobList].reverse();
+  useEffect(() => {
+    if (!searchKey) {
+      setFilteredData(jobList);
+      return;
+    }
+    const results = jobList.filter((item) =>
+      Object.keys(item).some((params) =>
+        item[params].toString().toLowerCase().includes(searchKey.toLowerCase())
+      )
+    );
+    setFilteredData(results);
+  }, [jobList, searchKey]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const reversedJobs = [...filteredData].reverse();
 
   const paginatedProducts = reversedJobs.slice(
     (currentPage - 1) * itemsPerPage,
@@ -28,7 +55,6 @@ const JobsTable = () => {
   const handleNext = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
-
   return (
     <div className="flex flex-col">
       <Breadcrumb />
@@ -46,6 +72,62 @@ const JobsTable = () => {
           </button>
         </div>
 
+        <div className="flex flex-col gap-2">
+          <input
+            type="text"
+            value={searchKey}
+            onChange={(e) => debounce(e.currentTarget.value)}
+            placeholder="Search by code, description or updateBy"
+            className="border p-2 rounded-[10px] w-[320px]"
+          />
+
+          <div className="flex gap-2">
+            <p>Visibility Column: </p>
+            <div className="flex gap-2">
+              <input
+                type="checkbox"
+                name="code"
+                id="code"
+                checked={filterColumn.code}
+                onChange={(e) =>
+                  setFilterColumn({ ...filterColumn, code: e.target.checked })
+                }
+              />
+              <label>Code</label>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="checkbox"
+                name="description"
+                id="description"
+                checked={filterColumn.description}
+                onChange={(e) =>
+                  setFilterColumn({
+                    ...filterColumn,
+                    description: e.target.checked,
+                  })
+                }
+              />
+              <label>Description</label>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="checkbox"
+                name="updateBy"
+                id="updateBy"
+                checked={filterColumn.updateBy}
+                onChange={(e) =>
+                  setFilterColumn({
+                    ...filterColumn,
+                    updateBy: e.target.checked,
+                  })
+                }
+              />
+              <label>Update By</label>
+            </div>
+          </div>
+        </div>
+
         <div className="overflow-x-auto pt-5">
           {pending ? (
             <div className="w-full py-10 text-center text-gray-500">
@@ -59,13 +141,25 @@ const JobsTable = () => {
                     <th className="p-3 text-sm font-semibold text-gray-700">
                       No
                     </th>
-                    <th className="p-3 text-sm font-semibold text-gray-700">
+                    <th
+                      className={`${
+                        filterColumn.code ? "" : "hidden"
+                      } p-3 text-sm font-semibold text-gray-700`}
+                    >
                       CODE
                     </th>
-                    <th className="p-3 text-sm font-semibold text-gray-700">
+                    <th
+                      className={`${
+                        filterColumn.description ? "" : "hidden"
+                      } p-3 text-sm font-semibold text-gray-700`}
+                    >
                       Description
                     </th>
-                    <th className="p-3 text-sm font-semibold text-gray-700">
+                    <th
+                      className={`${
+                        filterColumn.updateBy ? "" : "hidden"
+                      } p-3 text-sm font-semibold text-gray-700`}
+                    >
                       Update by
                     </th>
                   </tr>
@@ -87,13 +181,25 @@ const JobsTable = () => {
                           {" "}
                           {(currentPage - 1) * itemsPerPage + idx + 1}
                         </td>
-                        <td className="w-[20%] p-3 text-gray-800 uppercase">
+                        <td
+                          className={`${
+                            filterColumn.code ? "" : "hidden"
+                          } w-[20%] p-3 text-gray-800 uppercase`}
+                        >
                           {p.code}
                         </td>
-                        <td className="w-[45%] p-3 text-gray-800 capitalize">
+                        <td
+                          className={`${
+                            filterColumn.description ? "" : "hidden"
+                          } w-[45%] p-3 text-gray-800 capitalize`}
+                        >
                           {p.description}
                         </td>
-                        <td className="w-[40%] p-3 text-gray-600 uppercase">
+                        <td
+                          className={`${
+                            filterColumn.updateBy ? "" : "hidden"
+                          } w-[40%] p-3 text-gray-600 uppercase`}
+                        >
                           {p.updateBy || "-"}
                         </td>
                       </tr>
