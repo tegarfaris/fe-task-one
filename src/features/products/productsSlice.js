@@ -39,7 +39,6 @@ const productsSlice = createSlice({
       .addCase(REQUEST_ADD_PRODUCT.fulfilled, (state, action) => {
         state.pending = false;
         state.success = true;
-        // state.list.push(action.payload);
       })
       .addCase(REQUEST_ADD_PRODUCT.rejected, (state) => {
         state.pending = false;

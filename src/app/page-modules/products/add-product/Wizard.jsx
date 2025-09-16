@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import StepOne from "./StepOne";
 import StepTwo from "./StepTwo";
 import Breadcrumb from "../../../../components/breadcrumb/Breadcrumb";
@@ -8,7 +7,6 @@ import useProducts from "../../../hooks/useProduct";
 const Wizard = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(null);
-  const dispatch = useDispatch();
   const { addProduct } = useProducts();
 
   const handleNext = (data) => {
@@ -17,9 +15,9 @@ const Wizard = () => {
   };
 
   const handleSubmit = (finalData) => {
-    console.log(finalData, "final");
     if (finalData) {
-      dispatch(addProduct(finalData));
+      console.log("datas: ", finalData);
+      addProduct(finalData);
     }
   };
 

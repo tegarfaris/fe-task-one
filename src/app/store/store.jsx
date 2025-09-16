@@ -7,5 +7,7 @@ export const store = configureStore({
     products: productsReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(REDUX_MIDDLEWARE),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat(REDUX_MIDDLEWARE),
 });

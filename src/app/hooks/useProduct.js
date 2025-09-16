@@ -7,36 +7,41 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const useProducts = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const state = useSelector((state) => state.products);
+  const dispatch = useDispatch();
+  const { list, pending, success, isEmpty } = useSelector(
+    (state) => state.products
+  );
 
-  const getProductList = useCallback(() => {
-    dispatch(REQUEST_GET_LIST_PRODUCT()).then((result) => {
-      if (result.meta.requestStatus === "fulfilled") {
-        return console.log("berhasil bos");
-      } else if (result.meta.requestStatus === "rejected") {
-        console.error("Gagal boss:", result.error);
-      }
-    });
+  const getProductList = useCallback(async () => {
+    try {
+      const res = await dispatch(REQUEST_GET_LIST_PRODUCT()).unwrap();
+      console.log("berhasil bos");
+      return res;
+    } catch (error) {
+      console.error("Gagal boss:", error);
+      return null;
+    }
   }, [dispatch]);
 
   const addProduct = useCallback(
-    (newProduct) => {
-      dispatch(REQUEST_ADD_PRODUCT(newProduct)).then((result) => {
-        if (result.meta.requestStatus === "fulfilled") {
-          alert("berhasil ditambahkan");
-          navigate("/product-list");
-        } else if (result.meta.requestStatus === "rejected") {
-          console.error("error nich: ", result.error);
-        }
-      });
+    async (newProduct) => {
+      try {
+        await dispatch(REQUEST_ADD_PRODUCT(newProduct)).unwrap();
+        alert("berhasil ditambahkan");
+        navigate("/product-list");
+      } catch (error) {
+        console.error("error nich:", error);
+      }
     },
     [dispatch, navigate]
   );
 
   return {
-    ...state,
+    list,
+    pending,
+    success,
+    isEmpty,
     getProductList,
     addProduct,
   };
