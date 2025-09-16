@@ -16,7 +16,6 @@ const Wizard = () => {
 
   const handleSubmit = (finalData) => {
     if (finalData) {
-      console.log("datas: ", finalData);
       addProduct(finalData);
     }
   };
