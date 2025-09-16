@@ -1,11 +1,20 @@
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
 import { formatCurrency } from "../../../utils/formatCurrency";
+import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
+import useProducts from "../../hooks/useProduct";
+import { useEffect } from "react";
 
 const ProductsTable = () => {
   const navigate = useNavigate();
   const products = useSelector((state) => state.products.list);
+  const { getProductList, list } = useProducts();
+
+  useEffect(() => {
+    getProductList();
+  }, [getProductList]);
+
+  console.log("list:", list);
 
   return (
     <div className="flex flex-col">
@@ -57,7 +66,7 @@ const ProductsTable = () => {
                       {formatCurrency(p.price)}
                     </td>
 
-                    <td className="p-3 text-gray-600">{p.attachment || "-"}</td>
+                    <td className="p-3 text-gray-600">{p.document || "-"}</td>
                   </tr>
                 ))
               )}

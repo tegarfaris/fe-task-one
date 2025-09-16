@@ -19,7 +19,7 @@ const StepTwo = ({ onSubmit, prevData }) => {
 
   const handleSubmit = () => {
     if (file) {
-      onSubmit({ ...prevData, attachment: file.name });
+      onSubmit({ ...prevData, document: file.name });
     }
   };
 
