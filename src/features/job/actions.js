@@ -41,3 +41,17 @@ export const REQUEST_ADD_JOBS = createAsyncThunk(
     }
   }
 );
+
+export const REQUEST_DELETE_JOB = createAsyncThunk(
+  "jobs/delete",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await fetch(
+        `https://0fbc5627ec15.ngrok-free.app/api/job-types/${id}`
+      );
+      return res;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
