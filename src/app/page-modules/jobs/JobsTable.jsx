@@ -4,21 +4,36 @@ import { useCallback, useEffect, useState } from "react";
 import useJobs from "../../hooks/useJobs";
 import useDebounce from "../../hooks/function/useDebounce";
 import { Ellipsis } from "lucide-react";
+import SearchInput from "../../../components/table/table-controls/SearchInput";
+import ColumnVisibility from "../../../components/table/table-controls/ColumnVisibility";
+import ColumnSorting from "../../../components/table/table-controls/ColumnSorting";
+import DataTable from "../../../components/table/DataTable";
+import Pagination from "../../../components/table/table-controls/Pagination";
 
 const JobsTable = () => {
   const navigate = useNavigate();
-  const { getJobList, jobList, pending } = useJobs();
+  const { getJobList, jobList, deleteJob, pending, refetch } = useJobs();
   const [filteredData, setFilteredData] = useState(jobList);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [searchKey, setSearchKey] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  // visibility
   const [filterColumn, setFilterColumn] = useState({
     code: true,
     description: true,
     updateBy: true,
   });
 
-  // sorting state -> ASC/DESC
+  // aktif/inaktif sorting
+  const [sortEnabled, setSortEnabled] = useState({
+    code: false,
+    description: false,
+    updateBy: false,
+  });
+
+  // arah sorting tiap kolom
   const [sortConfig, setSortConfig] = useState({
     code: "asc",
     description: "asc",
@@ -29,15 +44,15 @@ const JobsTable = () => {
     callback: (keyword) => {
       setSearchKey(keyword);
     },
-    delay: 300,
+    delay: 0,
   });
 
   useEffect(() => {
     getJobList();
-  }, [getJobList]);
+  }, [getJobList, refetch]);
 
-  // handle toggle sorting
-  const handleSort = (column) => {
+  // toggle arah sorting ASC/DESC
+  const toggleSortDirection = (column) => {
     setSortConfig((prev) => ({
       ...prev,
       [column]: prev[column] === "asc" ? "desc" : "asc",
@@ -46,10 +61,13 @@ const JobsTable = () => {
 
   const multiSort = useCallback(
     (data, sortConfig) => {
-      const sortColumns = Object.keys(sortConfig);
+      const sortColumns = Object.keys(sortConfig).filter(
+        (col) => sortEnabled[col]
+      );
+
       return [...data].sort((a, b) => {
         for (let col of sortColumns) {
-          if (!filterColumn[col]) continue; // skip kalau kolom hidden
+          if (!filterColumn[col]) continue; // skip kalau hidden
 
           const order = sortConfig[col];
           const valA = a[col] ? a[col].toString().toLowerCase() : "";
@@ -63,7 +81,7 @@ const JobsTable = () => {
         return 0;
       });
     },
-    [filterColumn]
+    [filterColumn, sortEnabled]
   );
 
   useEffect(() => {
@@ -85,33 +103,94 @@ const JobsTable = () => {
     results = multiSort(results, sortConfig);
 
     setFilteredData(results);
-  }, [jobList, searchKey, sortConfig, filterColumn, multiSort]);
+  }, [jobList, searchKey, sortConfig, filterColumn, sortEnabled, multiSort]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const reversedJobs = [...filteredData].reverse();
 
-  const paginatedProducts = reversedJobs.slice(
+  const paginatedJobs = reversedJobs.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handlePrev = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this job?")) {
+      deleteJob(id);
+      setCurrentPage("1");
+    }
   };
 
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
+  const columns = [
+    {
+      key: "no",
+      title: "No",
+      width: "5%",
+      render: (_, idx) => {
+        const no = (currentPage - 1) * itemsPerPage + idx + 1;
+        return <p>{no}</p>;
+      },
+    },
+    {
+      key: "code",
+      title: "CODE",
+      isHidden: filterColumn.code ? "" : "hidden",
+      render: (data) => <p>{data.code}</p>,
+    },
+    {
+      key: "description",
+      title: "Description",
+      isHidden: filterColumn.description ? "" : "hidden",
+      render: (data) => <p>{data.description}</p>,
+    },
+    {
+      key: "updateBy",
+      title: "Update By",
+      isHidden: filterColumn.updateBy ? "" : "hidden",
+      render: (data) => <p>{data.updateBy}</p>,
+    },
+    {
+      key: "actions",
+      title: "",
+      width: "5%",
+      render: (data) => (
+        <div className="relative p-3">
+          <button
+            onClick={() => setOpenMenuId(openMenuId ? null : data.pjobTypeId)}
+          >
+            <Ellipsis />
+          </button>
+
+          {openMenuId === data.pjobTypeId && (
+            <div className="absolute right-3 mt-2 bg-white border border-gray-200 rounded shadow-md z-10">
+              <button
+                onClick={() =>
+                  navigate(`/job-list/edit-job/${data.pjobTypeId}`)
+                }
+                className="block px-4 py-2 text-left text-sm w-full hover:bg-gray-100"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(data.pjobTypeId)}
+                className="block px-4 py-2 text-left text-sm w-full hover:bg-red-100 text-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col">
       <Breadcrumb />
-      <div className="p-8 bg-white rounded-lg shadow border border-gray-200 mt-3">
+      <div className="flex flex-col p-8 bg-white rounded-lg shadow border border-gray-200 mt-3 gap-y-5">
         <div className="flex w-full gap-2 items-center">
           <h2 className="w-full text-2xl font-semibold text-gray-800">
             Job List
           </h2>
-
           <button
             onClick={() => navigate("/job-list/add-job")}
             className="bg-gray-900 text-white rounded-[5px] w-[200px] h-[50px] place-self-end"
@@ -120,202 +199,36 @@ const JobsTable = () => {
           </button>
         </div>
 
-        {/* Search & Column Visibility */}
-        <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            value={searchKey}
-            onChange={(e) => debounce(e.currentTarget.value)}
-            placeholder="Search by code, description or updateBy"
-            className="border p-2 rounded-[10px] w-[320px]"
-          />
-
-          <div className="flex gap-2">
-            <p>Visibility Column: </p>
-            <div className="flex gap-2">
-              <input
-                type="checkbox"
-                name="code"
-                id="code"
-                checked={filterColumn.code}
-                onChange={(e) => {
-                  if (
-                    !e.target.checked &&
-                    Object.values(filterColumn).filter(Boolean).length === 1
-                  ) {
-                    return;
-                  }
-                  setFilterColumn({ ...filterColumn, code: e.target.checked });
-                }}
-              />
-              <label>Code</label>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="checkbox"
-                name="description"
-                id="description"
-                checked={filterColumn.description}
-                onChange={(e) => {
-                  if (
-                    !e.target.checked &&
-                    Object.values(filterColumn).filter(Boolean).length === 1
-                  ) {
-                    return;
-                  }
-                  setFilterColumn({
-                    ...filterColumn,
-                    description: e.target.checked,
-                  });
-                }}
-              />
-              <label>Description</label>
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="checkbox"
-                name="updateBy"
-                id="updateBy"
-                checked={filterColumn.updateBy}
-                onChange={(e) => {
-                  if (
-                    !e.target.checked &&
-                    Object.values(filterColumn).filter(Boolean).length === 1
-                  ) {
-                    return;
-                  }
-                  setFilterColumn({
-                    ...filterColumn,
-                    updateBy: e.target.checked,
-                  });
-                }}
-              />
-              <label>Update By</label>
-            </div>
+        <div className="flex flex-col gap-4 mt-2">
+          <SearchInput value={searchKey} onChange={debounce} />
+          <div className="flex gap-20">
+            <ColumnVisibility
+              filterColumn={filterColumn}
+              setFilterColumn={setFilterColumn}
+            />
+            <ColumnSorting
+              sortEnabled={sortEnabled}
+              setSortEnabled={setSortEnabled}
+              sortConfig={sortConfig}
+              toggleSortDirection={toggleSortDirection}
+            />
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto pt-5">
-          {pending ? (
-            <div className="w-full py-10 text-center text-gray-500">
-              Loading Job...
-            </div>
-          ) : (
-            <>
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="w-[5%] p-3 text-sm font-semibold text-gray-700">
-                      No
-                    </th>
-                    <th
-                      className={`${
-                        filterColumn.code ? "" : "hidden"
-                      } p-3 text-sm font-semibold text-gray-700 cursor-pointer`}
-                      onClick={() => handleSort("code")}
-                    >
-                      CODE {sortConfig.code === "asc" ? "🔼" : "🔽"}
-                    </th>
-                    <th
-                      className={`${
-                        filterColumn.description ? "" : "hidden"
-                      } p-3 text-sm font-semibold text-gray-700 cursor-pointer`}
-                      onClick={() => handleSort("description")}
-                    >
-                      Description{" "}
-                      {sortConfig.description === "asc" ? "🔼" : "🔽"}
-                    </th>
-                    <th
-                      className={`${
-                        filterColumn.updateBy ? "" : "hidden"
-                      } p-3 text-sm font-semibold text-gray-700 cursor-pointer`}
-                      onClick={() => handleSort("updateBy")}
-                    >
-                      Update by {sortConfig.updateBy === "asc" ? "🔼" : "🔽"}
-                    </th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedProducts.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="p-4 text-gray-500 text-center">
-                        No Jobs available.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedProducts.map((p, idx) => (
-                      <tr
-                        key={idx}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition"
-                      >
-                        <td className="w-[5%] p-3 text-gray-800">
-                          {(currentPage - 1) * itemsPerPage + idx + 1}
-                        </td>
-                        <td
-                          className={`${
-                            filterColumn.code ? "" : "hidden"
-                          } w-[20%] p-3 text-gray-800 uppercase`}
-                        >
-                          {p.code}
-                        </td>
-                        <td
-                          className={`${
-                            filterColumn.description ? "" : "hidden"
-                          } w-[45%] p-3 text-gray-800 capitalize`}
-                        >
-                          {p.description}
-                        </td>
-                        <td
-                          className={`${
-                            filterColumn.updateBy ? "" : "hidden"
-                          } w-[40%] p-3 text-gray-600 uppercase`}
-                        >
-                          {p.updateBy || "-"}
-                        </td>
-                        <td className="cursor-pointer p-5">
-                          <Ellipsis />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+        <DataTable
+          columns={columns}
+          datas={paginatedJobs}
+          loadingState={pending}
+        />
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex justify-end items-center gap-4 mt-6">
-                  <button
-                    onClick={handlePrev}
-                    disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded ${
-                      currentPage === 1
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-900 text-white"
-                    }`}
-                  >
-                    Prev
-                  </button>
-                  <span className="text-gray-700">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded ${
-                      currentPage === totalPages
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-900 text-white"
-                    }`}
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onNext={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+        />
       </div>
     </div>
   );

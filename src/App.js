@@ -21,6 +21,7 @@ function App() {
         {/* job list */}
         <Route path="/job-list" element={<JobsTable />} />
         <Route path="/job-list/add-job" element={<AddJobForm />} />
+        <Route path="/job-list/edit-job/:pjobTypeId" element={<AddJobForm />} />
       </Routes>
     </Layout>
   );

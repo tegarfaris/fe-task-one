@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import useJobs from "../../../hooks/useJobs";
+import { useParams } from "react-router-dom";
 
-const AddJobForm = () => {
-  const { addJob } = useJobs();
+const JobForm = () => {
+  const { pjobTypeId } = useParams();
+  const { addJob, updateJob, getDetailJob, detailJob } = useJobs();
+
   const [form, setForm] = useState({
     code: "",
     description: "",
@@ -10,13 +13,28 @@ const AddJobForm = () => {
     updateDate: "",
     pjobTypeId: "",
   });
+
   const [isValid, setIsValid] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
+  useEffect(() => {
+    if (pjobTypeId) {
+      getDetailJob(pjobTypeId);
+    }
+  }, [pjobTypeId, getDetailJob]);
 
+  useEffect(() => {
+    if (detailJob) {
+      setForm({
+        code: detailJob.code || "",
+        description: detailJob.description || "",
+        updateBy: detailJob.updateBy || "",
+        updateDate: detailJob.updateDate || "",
+        pjobTypeId: detailJob.pjobTypeId || "",
+      });
+    }
+  }, [detailJob]);
+
+  // Validasi form
   useEffect(() => {
     const valid =
       form.code.trim() !== "" &&
@@ -27,17 +45,33 @@ const AddJobForm = () => {
     setIsValid(valid);
   }, [form]);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = () => {
-    if (isValid) {
-      addJob({ ...form, updateDate: Date.now(), pjobTypeId: Math.random() });
+    if (!isValid) return;
+
+    const payload = {
+      ...form,
+      updateDate: Date.now(),
+      pjobTypeId: pjobTypeId || Math.random(),
+    };
+
+    if (pjobTypeId) {
+      updateJob(payload);
+    } else {
+      addJob(payload);
     }
   };
 
   return (
     <div className="p-8 bg-white rounded-lg shadow border border-gray-200 w-full max-w-lg mx-auto">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-        Form Add Job
+        {pjobTypeId ? "Update Job" : "Add Job"}
       </h2>
+
       <div className="space-y-4">
         {/* CODE */}
         <div>
@@ -70,7 +104,7 @@ const AddJobForm = () => {
           />
         </div>
 
-        {/* update by */}
+        {/* Update By */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Update By
@@ -96,11 +130,11 @@ const AddJobForm = () => {
               : "bg-gray-400 text-gray-200 cursor-not-allowed"
           }`}
         >
-          Submit
+          {pjobTypeId ? "Update" : "Submit"}
         </button>
       </div>
     </div>
   );
 };
 
-export default AddJobForm;
+export default JobForm;

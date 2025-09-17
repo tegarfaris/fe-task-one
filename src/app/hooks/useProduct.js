@@ -13,9 +13,7 @@ const useProducts = () => {
 
   const getProductList = useCallback(() => {
     dispatch(REQUEST_GET_LIST_PRODUCT()).then((result) => {
-      if (result.meta.requestStatus === "fulfilled") {
-        return console.log("berhasil bos");
-      } else if (result.meta.requestStatus === "rejected") {
+      if (result.meta.requestStatus === "rejected") {
         console.error("Gagal boss:", result.error);
       }
     });
