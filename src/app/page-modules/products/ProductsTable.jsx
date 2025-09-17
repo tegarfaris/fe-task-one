@@ -3,6 +3,8 @@ import { formatCurrency } from "../../../utils/formatCurrency";
 import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
 import useProducts from "../../hooks/useProduct";
 import { useEffect, useState } from "react";
+import DataTable from "../../../components/table/DataTable";
+import Pagination from "../../../components/table/table-controls/Pagination";
 
 const ProductsTable = () => {
   const navigate = useNavigate();
@@ -22,118 +24,69 @@ const ProductsTable = () => {
     currentPage * itemsPerPage
   );
 
-  const handlePrev = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
+  const columns = [
+    {
+      key: "no",
+      title: "No",
+      width: "5%",
+      render: (_, idx) => {
+        const no = (currentPage - 1) * itemsPerPage + idx + 1;
+        return <p>{no}</p>;
+      },
+    },
+    {
+      key: "name",
+      title: "Name",
+      render: (data) => {
+        return <p>{data.name}</p>;
+      },
+    },
+    {
+      key: "price",
+      title: "Price",
+      render: (data) => {
+        return <p>{formatCurrency(data.price)}</p>;
+      },
+    },
+    {
+      key: "document",
+      title: "Document",
+      render: (data) => {
+        return <p>{data.document}</p>;
+      },
+    },
+  ];
 
   return (
     <div className="flex flex-col">
       <Breadcrumb />
-      <div className="p-8 bg-white rounded-lg shadow border border-gray-200 mt-3">
+      <div className="flex flex-col p-8 bg-white rounded-lg shadow border border-gray-200 mt-3 gap-y-5">
         <div className="flex w-full gap-2 items-center">
           <h2 className="w-full text-2xl font-semibold text-gray-800">
-            Product List
+            Job List
           </h2>
-
           <button
-            onClick={() => navigate("/product-list/add-product")}
+            onClick={() => navigate("/job-list/add-job")}
             className="bg-gray-900 text-white rounded-[5px] w-[200px] h-[50px] place-self-end"
           >
-            Add Product
+            Add Job
           </button>
         </div>
 
-        <div className="overflow-x-auto pt-5">
-          {pending ? (
-            <div className="w-full py-10 text-center text-gray-500">
-              Loading products...
-            </div>
-          ) : (
-            <>
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="p-3 text-sm font-semibold text-gray-700">
-                      No
-                    </th>
-                    <th className="p-3 text-sm font-semibold text-gray-700">
-                      Name
-                    </th>
-                    <th className="p-3 text-sm font-semibold text-gray-700">
-                      Price
-                    </th>
-                    <th className="p-3 text-sm font-semibold text-gray-700">
-                      Document
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedProducts.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className="p-4 text-gray-500 text-center">
-                        No products available.
-                      </td>
-                    </tr>
-                  ) : (
-                    paginatedProducts.map((p, idx) => (
-                      <tr
-                        key={idx}
-                        className="border-b border-gray-100 hover:bg-gray-50 transition"
-                      >
-                        <td className="w-[5%] p-3 text-gray-800">
-                          {" "}
-                          {(currentPage - 1) * itemsPerPage + idx + 1}
-                        </td>
-                        <td className="w-[40%] p-3 text-gray-800">{p.name}</td>
-                        <td className="w-[20%] p-3 text-gray-800">
-                          {formatCurrency(p.price)}
-                        </td>
-                        <td className="w-[40%] p-3 text-gray-600">
-                          {p.document || "-"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+        <DataTable
+          columns={columns}
+          datas={paginatedProducts}
+          loadingState={pending}
+        />
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="flex justify-end items-center gap-4 mt-6">
-                  <button
-                    onClick={handlePrev}
-                    disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded ${
-                      currentPage === 1
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-900 text-white"
-                    }`}
-                  >
-                    Prev
-                  </button>
-                  <span className="text-gray-700">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded ${
-                      currentPage === totalPages
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-900 text-white"
-                    }`}
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onNext={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+        />
       </div>
     </div>
   );

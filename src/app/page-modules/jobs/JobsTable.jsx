@@ -153,7 +153,7 @@ const JobsTable = () => {
       title: "",
       width: "5%",
       render: (data) => (
-        <div className="relative p-3">
+        <div className="relative p-2">
           <button
             onClick={() => setOpenMenuId(openMenuId ? null : data.pjobTypeId)}
           >
