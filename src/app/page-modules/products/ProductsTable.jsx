@@ -63,10 +63,10 @@ const ProductsTable = () => {
       <div className="flex flex-col p-8 bg-white rounded-lg shadow border border-gray-200 mt-3 gap-y-5">
         <div className="flex w-full gap-2 items-center">
           <h2 className="w-full text-2xl font-semibold text-gray-800">
-            Job List
+            Product List
           </h2>
           <button
-            onClick={() => navigate("/job-list/add-job")}
+            onClick={() => navigate("/product-list/add-product")}
             className="bg-gray-900 text-white rounded-[5px] w-[200px] h-[50px] place-self-end"
           >
             Add Job

@@ -1,5 +1,6 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAction, createAsyncThunk } from "@reduxjs/toolkit";
 
+export const REQUEST_RESET_JOBS = createAction("jobs/reset");
 export const REQUEST_GET_LIST_JOB = createAsyncThunk(
   "jobs/list",
   async (_, { rejectWithValue }) => {

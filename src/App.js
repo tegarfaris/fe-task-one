@@ -14,6 +14,7 @@ function App() {
   return (
     <Layout>
       <Routes>
+        {/* product list */}
         <Route path="/" element={<Navigate to="/product-list" replace />} />
         <Route path="/product-list" element={<ProductsTable />} />
         <Route path="/product-list/add-product" element={<Wizard />} />

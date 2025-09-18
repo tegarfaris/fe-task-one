@@ -3,6 +3,7 @@ import {
   REQUEST_DELETE_JOB,
   REQUEST_DETAIL_JOB,
   REQUEST_GET_LIST_JOB,
+  REQUEST_RESET_JOBS,
   REQUEST_UPDATE_JOB,
 } from "./actions";
 import { REQUEST_ADD_JOBS } from "./actions";
@@ -92,6 +93,16 @@ const jobsSlice = createSlice({
       .addCase(REQUEST_UPDATE_JOB.rejected, (state) => {
         state.pending = false;
         state.success = false;
+      })
+
+      // reset job
+      .addCase(REQUEST_RESET_JOBS, (state) => {
+        state.jobList = null;
+        state.detailJob = null;
+        state.isEmpty = false;
+        state.pending = false;
+        state.success = false;
+        state.refetch = null;
       });
   },
 });

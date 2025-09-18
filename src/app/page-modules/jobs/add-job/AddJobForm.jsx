@@ -24,7 +24,19 @@ const JobForm = () => {
   }, [pjobTypeId, getDetailJob]);
 
   useEffect(() => {
-    if (detailJob) {
+    if (!pjobTypeId) {
+      setForm({
+        code: "",
+        description: "",
+        updateBy: "",
+        updateDate: "",
+        pjobTypeId: "",
+      });
+    }
+  }, [pjobTypeId]);
+
+  useEffect(() => {
+    if (pjobTypeId && detailJob) {
       setForm({
         code: detailJob.code || "",
         description: detailJob.description || "",
@@ -33,7 +45,7 @@ const JobForm = () => {
         pjobTypeId: detailJob.pjobTypeId || "",
       });
     }
-  }, [detailJob]);
+  }, [detailJob, pjobTypeId]);
 
   // Validasi form
   useEffect(() => {
