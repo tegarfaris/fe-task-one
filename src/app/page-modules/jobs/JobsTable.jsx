@@ -3,10 +3,9 @@ import Breadcrumb from "../../../components/breadcrumb/Breadcrumb";
 import { useCallback, useEffect, useState } from "react";
 import useJobs from "../../hooks/useJobs";
 import useDebounce from "../../hooks/function/useDebounce";
-import { Ellipsis } from "lucide-react";
+import { ArrowDownAZ, ArrowUpAZ, CirclePlus, Ellipsis } from "lucide-react";
 import SearchInput from "../../../components/table/table-controls/SearchInput";
 import ColumnVisibility from "../../../components/table/table-controls/ColumnVisibility";
-import ColumnSorting from "../../../components/table/table-controls/ColumnSorting";
 import DataTable from "../../../components/table/DataTable";
 import Pagination from "../../../components/table/table-controls/Pagination";
 
@@ -24,13 +23,6 @@ const JobsTable = () => {
     code: true,
     description: true,
     updateBy: true,
-  });
-
-  // aktif/inaktif sorting
-  const [sortEnabled, setSortEnabled] = useState({
-    code: false,
-    description: false,
-    updateBy: false,
   });
 
   // arah sorting tiap kolom
@@ -51,23 +43,25 @@ const JobsTable = () => {
     getJobList();
   }, [getJobList, refetch]);
 
-  // toggle arah sorting ASC/DESC
-  const toggleSortDirection = (column) => {
-    setSortConfig((prev) => ({
-      ...prev,
-      [column]: prev[column] === "asc" ? "desc" : "asc",
-    }));
+  const toggleSort = (column) => {
+    setSortConfig((prev) => {
+      let next;
+      if (prev[column] === null) next = "asc";
+      else if (prev[column] === "asc") next = "desc";
+      else next = null;
+      return { ...prev, [column]: next };
+    });
   };
 
   const multiSort = useCallback(
     (data, sortConfig) => {
       const sortColumns = Object.keys(sortConfig).filter(
-        (col) => sortEnabled[col]
+        (col) => sortConfig[col] !== null
       );
 
       return [...data].sort((a, b) => {
         for (let col of sortColumns) {
-          if (!filterColumn[col]) continue; // skip kalau hidden
+          if (!filterColumn[col]) continue;
 
           const order = sortConfig[col];
           const valA = a[col] ? a[col].toString().toLowerCase() : "";
@@ -81,7 +75,7 @@ const JobsTable = () => {
         return 0;
       });
     },
-    [filterColumn, sortEnabled]
+    [filterColumn]
   );
 
   useEffect(() => {
@@ -103,7 +97,7 @@ const JobsTable = () => {
     results = multiSort(results, sortConfig);
 
     setFilteredData(results);
-  }, [jobList, searchKey, sortConfig, filterColumn, sortEnabled, multiSort]);
+  }, [jobList, searchKey, sortConfig, filterColumn, multiSort]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const reversedJobs = [...filteredData].reverse();
@@ -120,6 +114,12 @@ const JobsTable = () => {
     }
   };
 
+  const renderSortIcon = (col) => {
+    if (sortConfig[col] === "asc") return <ArrowUpAZ />;
+    if (sortConfig[col] === "desc") return <ArrowDownAZ />;
+    return null;
+  };
+
   const columns = [
     {
       key: "no",
@@ -132,19 +132,40 @@ const JobsTable = () => {
     },
     {
       key: "code",
-      title: "CODE",
+      title: (
+        <div
+          className="flex items-center gap-1 cursor-pointer select-none"
+          onClick={() => toggleSort("code")}
+        >
+          CODE {renderSortIcon("code")}
+        </div>
+      ),
       isHidden: filterColumn.code ? "" : "hidden",
       render: (data) => <p>{data.code}</p>,
     },
     {
       key: "description",
-      title: "Description",
+      title: (
+        <div
+          className="flex items-center gap-1 cursor-pointer select-none"
+          onClick={() => toggleSort("description")}
+        >
+          Description {renderSortIcon("description")}
+        </div>
+      ),
       isHidden: filterColumn.description ? "" : "hidden",
       render: (data) => <p>{data.description}</p>,
     },
     {
       key: "updateBy",
-      title: "Update By",
+      title: (
+        <div
+          className="flex items-center gap-1 cursor-pointer select-none"
+          onClick={() => toggleSort("updateBy")}
+        >
+          Update By {renderSortIcon("updateBy")}
+        </div>
+      ),
       isHidden: filterColumn.updateBy ? "" : "hidden",
       render: (data) => <p>{data.updateBy}</p>,
     },
@@ -187,32 +208,28 @@ const JobsTable = () => {
     <div className="flex flex-col">
       <Breadcrumb />
       <div className="flex flex-col p-8 bg-white rounded-lg shadow border border-gray-200 mt-3 gap-y-5">
-        <div className="flex w-full gap-2 items-center">
+        <div className="flex w-full gap-2 items-center border-b pb-4">
           <h2 className="w-full text-2xl font-semibold text-gray-800">
             Job List
           </h2>
           <button
             onClick={() => navigate("/job-list/add-job")}
-            className="bg-gray-900 text-white rounded-[5px] w-[200px] h-[50px] place-self-end"
+            className="bg-gray-900 text-white rounded-[5px] w-[150px] h-[40px] place-self-end"
           >
-            Add Job
+            <div className="flex gap-2 justify-center">
+              <CirclePlus />
+              <p>Add Job</p>
+            </div>
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 mt-2">
+        <div className="flex w-full justify-between gap-4 mt-2">
           <SearchInput value={searchKey} onChange={debounce} />
-          <div className="flex gap-20">
-            <ColumnVisibility
-              filterColumn={filterColumn}
-              setFilterColumn={setFilterColumn}
-            />
-            <ColumnSorting
-              sortEnabled={sortEnabled}
-              setSortEnabled={setSortEnabled}
-              sortConfig={sortConfig}
-              toggleSortDirection={toggleSortDirection}
-            />
-          </div>
+
+          <ColumnVisibility
+            filterColumn={filterColumn}
+            setFilterColumn={setFilterColumn}
+          />
         </div>
 
         <DataTable

@@ -69,7 +69,7 @@ const ProductsTable = () => {
             onClick={() => navigate("/product-list/add-product")}
             className="bg-gray-900 text-white rounded-[5px] w-[200px] h-[50px] place-self-end"
           >
-            Add Job
+            Add Product
           </button>
         </div>
 

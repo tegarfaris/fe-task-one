@@ -1,3 +1,4 @@
+import { ListChecks } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 const ColumnVisibility = ({ filterColumn, setFilterColumn }) => {
@@ -27,9 +28,12 @@ const ColumnVisibility = ({ filterColumn, setFilterColumn }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="px-4 py-2 border rounded bg-gray-900 hover:bg-gray-600 text-white"
+        className="px-4 py-2 border rounded rounded-[5px] bg-gray-900 hover:bg-gray-600 text-white"
       >
-        Visibility Columns
+        <div className="flex gap-2 justify-center items-center">
+          <ListChecks size={20} />
+          <p>Visibility Columns</p>
+        </div>
       </button>
 
       {open && (
